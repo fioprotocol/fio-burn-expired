@@ -1,0 +1,20 @@
+{
+    "name": "fio-burn-expired",
+    "version": "1.0.0",
+    "description": "A service for burning expired FIO Domains",
+    "main": "./index.js",
+    "sideEffects": false,
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fioprotocol/fio-burn-expired"
+    },
+    "dependencies": {
+        "@fioprotocol/fiosdk": "^1.8.0",
+        "node-fetch": "^3.3.0",
+        "dotenv": "^16.0.3"
+    },
+    "scripts": {
+        "burn": "node index.js"
+    }
+}
