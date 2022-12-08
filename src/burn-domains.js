@@ -1,6 +1,5 @@
 import { FIOSDK } from '@fioprotocol/fiosdk';
 import fetch from 'node-fetch';
-import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -19,16 +18,6 @@ async function timeout(ms) {
   })
 }
 
-async function callFioApi(apiCall, params) {
-  const response = await fetch(fiourl + apiCall, {
-    method: 'POST',
-    body: JSON.stringify(params),
-    headers: {'Content-Type': 'application/json'}
-  });
-  const data = await response.json();
-  return data;
-};
-
 const burnExpired = async () => {
 
   const user = new FIOSDK(
@@ -42,7 +31,7 @@ const burnExpired = async () => {
 
   let domain, currentDomainName;
   let offset = 1;
-  let limit = 500;
+  let limit = 1000;
   let retryCount = 0;
   let empty = false;
   let burned = false;
@@ -51,6 +40,7 @@ const burnExpired = async () => {
   let count = 1; 
   let burnLowerBound;
   let newOffset;
+  let isWork = false;
   const burnLimit = 1;
 
   const curdate = new Date();
@@ -59,10 +49,8 @@ const burnExpired = async () => {
   const utcMinus90Days = utcSeconds - ninetyDaysInSecs;
 
   while (!empty) {
-    console.log('\noffset: ', offset);  
-    console.log('limit: ', limit);  
 
-    const domainQuery = await fetch(baseUrl + 'chain/get_table_rows', {
+    const domainQuery = await fetch(fiourl + 'get_table_rows', {
       body: `{
         "json": true,
         "code": "fio.address",
@@ -89,31 +77,7 @@ const burnExpired = async () => {
           burnLowerBound = domains.rows[domain].id; 
           burned = false;
 
-          fs.appendFile("./burned-domains.txt", `\nDomain: ${domains.rows[domain].name}`, function(err) {
-            if(err) {
-                return console.log(err);
-            }
-        
-            console.log("\nBurning: ", currentDomainName);
-          }); 
-
           while (!burned) {
-            const pushResultBefore = await fetch(baseUrl + 'chain/get_table_rows', {
-              body: `{
-              "json": true,
-              "code": "fio.address",
-              "scope": "fio.address",
-              "table": "domains",
-              "limit": "1",
-              "lower_bound": "${burnLowerBound}",
-              "reverse": false,
-              "show_payer": false
-            }`,
-              method: 'POST',
-            });
-
-            const resultBefore = await pushResultBefore.json()
-
             try {
               const result = await user.genericAction('pushTransaction', {
                 action: 'burnexpired',
@@ -125,6 +89,7 @@ const burnExpired = async () => {
                 }
               })
               console.log('Offset = ' + burnLowerBound + ', Limit = ' + burnLimit + ', Result: {status: ' + result.status + ', items_burned: ' + result.items_burned + ' }');
+              isWork = true;
               workDoneThisOffset = true;
               workDoneThisRound = true;
               retryCount = 0;
@@ -146,7 +111,7 @@ const burnExpired = async () => {
 
             }
 
-            const pushResult = await fetch(baseUrl + 'chain/get_table_rows', {
+            const pushResult = await fetch(fiourl + 'get_table_rows', {
               body: `{
               "json": true,
               "code": "fio.address",
@@ -189,19 +154,20 @@ const burnExpired = async () => {
                 }
               };
             }
-          }; // while !burned
-        }; // if
-      };  // for
+          };
+        };
+      };
 
       if (domain == domains.rows.length - 1) {
         newOffset = domains.rows[domain].id + 1; // Start the next iteration at the next record
       }
-    };  // else
+    };
 
     offset = newOffset;
-    //offset += limit;
 
   };  // while !empty
+  
+  if (!isWork) {console.log('No Domains burned this period')}
 }
 
 burnExpired();
