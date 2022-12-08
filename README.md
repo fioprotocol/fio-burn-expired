@@ -5,9 +5,11 @@ Service to burn expired domains
 
 Include a .env file with:
 
+```
 server=          # FIO API node (e.g., https://fio.blockpane.com)
 privateKey=      # FIO private key
 publicKey=       # FIO public key
+```
 
 ## Usage
 
