@@ -1,3 +1,9 @@
+/**
+ * Service to  burn nfts that have been removed by a user
+ * Recommend run interval: weekly
+ * Console logs: send to discord
+ */
+
 import { FIOSDK } from '@fioprotocol/fiosdk';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -37,7 +43,6 @@ const burnExpired = async () => {
   let burned = false;
   let workDoneThisRound = true;
   let workDoneThisOffset = false;
-  let count = 1; 
   let burnLowerBound;
   let newOffset;
   let isWork = false;
@@ -88,25 +93,24 @@ const burnExpired = async () => {
                   limit: burnLimit
                 }
               })
-              console.log('Offset = ' + burnLowerBound + ', Limit = ' + burnLimit + ', Result: {status: ' + result.status + ', items_burned: ' + result.items_burned + ' }');
+              console.log(`Domain = ${currentDomainName}, Offset = ${burnLowerBound}, Limit = ${burnLimit}, Result: {status: ${result.status}, items_burned: ${result.items_burned}}`);
               isWork = true;
               workDoneThisOffset = true;
               workDoneThisRound = true;
               retryCount = 0;
               await timeout(1000); // To avoid duplicate transaction
             } catch (err) {
-              workDoneThisOffset = false;
-              //console.log('Error: ', err);
-              
+              workDoneThisOffset = false;              
               if (err.errorCode == 400 && err.json.fields[0].error == 'No work.') {
                 console.log('No Work ')
                 burned = true; // If no work done, exit out of this domain
                 break;
-              } else if (err.json.code == 500 && err.json.error.what == 'Transaction exceeded the current CPU usage limit imposed on the transaction') {
-                console.log('Error: Offset = ' + burnLowerBound + ', Limit = ' + burnLimit + ', Result: Transaction exceeded the current CPU usage limit imposed on the transaction');
+              } else if (err.json.code == 500 && err.json.error.what == 'Transaction exceeded the current CPU usage limit imposed on the transaction' || err.json.error.what == 'Transaction took too long') {
+                console.log(`Error: Domain = ${currentDomainName}, Offset = ${burnLowerBound}, Limit = ${burnLimit}, Result: Transaction took too long`);
                 retryCount++;
               } else {
                 console.log('UNEXPECTED ERROR: ', err);
+                retryCount++;
               }
 
             }
@@ -129,7 +133,6 @@ const burnExpired = async () => {
             
             if (result.rows.length == 0) {
               console.log("DONE\n");
-              count = 1;  // Start again
               // If this is the first round, or work was done during the round, reset 
               if (workDoneThisRound) {
                 workDoneThisRound = false;
@@ -138,21 +141,13 @@ const burnExpired = async () => {
               }
             } else if (result.rows[0].name != currentDomainName) {
               console.log("DONE: (different domain found)\n");
-              burned = true;  // No work was done this round and we are at the end of the domains
+              burned = true;  // Domain is fully burned
             } else {
-              // Only increment the offset if no work was done
-              if (!workDoneThisOffset) {
-                // If you have done several retries, exit out of while !burned loop
-                if (!workDoneThisOffset) {
-                  // If you have done several retries, move to next offset
-                  if (retryCount == 0) {
-                    count++;
-                  } else if (retryCount >= retryLimit) {
-                    retryCount = 0;
-                    count++;
-                  }
-                }
-              };
+              // If no work done and too many retries, move on to next domain
+              if (!workDoneThisOffset && retryCount >= retryLimit) {
+                  retryCount = 0;
+                  burned = true;  // Move on to next domain
+              }
             }
           };
         };

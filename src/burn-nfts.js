@@ -1,3 +1,9 @@
+/**
+ * Service to  burn nfts that have been removed by a user
+ * Recommend run interval: every 10 minutes
+ * Console logs: server only. Do not send to discord
+ */
+
 import { FIOSDK } from '@fioprotocol/fiosdk';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -40,7 +46,12 @@ const burnnfts = async () => {
     }
     
   } catch (err) {
-    console.log('Error: ', err.json)
+    if (err.json.fields[0]) {
+      console.log(`burn-nfts: ${err.json.fields[0].error}`);
+    } else {
+      console.log('ERROR: ', err);
+    }
+    
   }
 }
 

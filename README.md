@@ -13,4 +13,8 @@ publicKey=       # FIO public key
 
 ## Usage
 
-npm run burn
+npm run burn-domains  # Burn domains beyond 90 day expiration
+npm run get-domains   # Get list of expired domains
+npm run burn-nfts     # Burn NFTs that have been removed by users
+npm run get-wraps     # Get recent FIO token wrap transactions
+npm run pay-tpid      # Pay TPID rewards

@@ -1,3 +1,9 @@
+/**
+ * Returns all expired domains and the targeted burn date.
+ * Recommend run interval: weekly
+ * Console logs: send to discord
+ */
+
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 dotenv.config();
