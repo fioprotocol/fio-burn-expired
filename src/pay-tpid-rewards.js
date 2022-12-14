@@ -1,3 +1,9 @@
+/**
+ * Service to call tpidclaim
+ * Recommend run interval: daily
+ * Console logs: server only. Do not send to discord
+ */
+
 import { FIOSDK } from '@fioprotocol/fiosdk';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';

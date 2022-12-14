@@ -18,6 +18,7 @@
         "burn-domains": "node src/burn-domains.js",
         "get-domains": "node src/get-expired-domains.js",
         "burn-nfts": "node src/burn-nfts.js",
+        "get-unwraps": "node src/get-unwraps.js",
         "pay-tpid": "node src/pay-tpid-rewards.js"
     }
 }
