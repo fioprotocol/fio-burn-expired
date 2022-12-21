@@ -1,13 +1,13 @@
 {
-    "name": "fio-burn-expired",
+    "name": "fio-service-burndomains",
     "version": "1.0.0",
-    "description": "A service for burning expired FIO Domains",
-    "main": "./index.js",
+    "description": "A service for burning expired FIO Domains.",
+    "main": "./burn-domains.js",
     "sideEffects": false,
     "type": "module",
     "repository": {
         "type": "git",
-        "url": "https://github.com/fioprotocol/fio-burn-expired"
+        "url": "https://github.com/fioprotocol/fio-service-burndomains"
     },
     "dependencies": {
         "@fioprotocol/fiosdk": "^1.8.0",
@@ -15,10 +15,6 @@
         "dotenv": "^16.0.3"
     },
     "scripts": {
-        "burn-domains": "node src/burn-domains.js",
-        "get-domains": "node src/get-expired-domains.js",
-        "burn-nfts": "node src/burn-nfts.js",
-        "get-unwraps": "node src/get-unwraps.js",
-        "pay-tpid": "node src/pay-tpid-rewards.js"
+        "burn-domains": "node burn-domains.js"
     }
 }
