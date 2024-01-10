@@ -1,5 +1,5 @@
 {
-    "name": "fio-service-burndomains",
+    "name": "@fioprotocol/fio-service-burndomains",
     "version": "1.0.0",
     "description": "A service for burning expired FIO Domains.",
     "main": "./burn-domains.js",
